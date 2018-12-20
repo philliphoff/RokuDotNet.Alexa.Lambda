@@ -8,10 +8,9 @@ namespace RokuDotNet.Alexa.Lambda
         public DirectiveHeader Header { get; set; }
     }
 
-    public sealed class DirectiveResponse<T>
-        where T : DirectiveEvent
+    public sealed class DirectiveResponse
     {
         [JsonProperty("event")]
-        public T Event { get; set; }
+        public DirectiveEvent Event { get; set; }
     }
 }
