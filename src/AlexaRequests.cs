@@ -5,13 +5,13 @@ using Alexa.NET.Response;
 using Amazon.Lambda.Core;
 using Amazon.Lambda.Serialization.Json;
 
-[assembly: LambdaSerializer(typeof(JsonSerializer))]
+[assembly: LambdaSerializer(typeof(RokuDotNet.Alexa.Lambda.RokuDirectiveSerializer))]
 
 namespace RokuDotNet.Alexa.Lambda
 {
     public static class AlexaRequests
     {
-        public static Task<DirectiveResponse<DiscoveryDirectiveEvent>> TestRequestAsync(DirectiveRequest<DiscoveryDirective> request, ILambdaContext context)
+        public static Task<DirectiveResponse<DiscoveryDirectiveEvent>> TestRequestAsync(DirectiveRequest request, ILambdaContext context)
         {
             context.Logger.Log("Namespace: " + request?.Directive?.Header?.Namespace ?? "Unkonwn");
             context.Logger.Log("Name: " + request?.Directive?.Header?.Name ?? "Unkonwn");

@@ -8,10 +8,10 @@ namespace RokuDotNet.Alexa.Lambda
         public DirectiveHeader Header { get; set; }
     }
 
-    public sealed class DirectiveRequest<T>
-        where T : Directive
+    public sealed class DirectiveRequest
     {
+        [JsonConverter(typeof(DirectiveConverter))]
         [JsonProperty("directive")]
-        public T Directive { get; set; }
+        public Directive Directive { get; set; }
     }
 }
