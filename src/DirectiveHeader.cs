@@ -14,6 +14,6 @@ namespace RokuDotNet.Alexa.Lambda
         public string Namespace { get; set; }
 
         [JsonProperty("payloadVersion")]
-        public int PayloadVersion { get; set;}
+        public string PayloadVersion { get; set;}
     }  
 }
