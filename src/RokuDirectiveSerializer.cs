@@ -4,9 +4,10 @@ namespace RokuDotNet.Alexa.Lambda
     {
         public RokuDirectiveSerializer()
             : base(
-                new[]
+                new IDirectiveTypeConverter[]
                 { 
-                    new DirectiveTypeConverter<DiscoveryDirective>("Alexa.Discovery", "Discover") 
+                    new DirectiveTypeConverter<DiscoveryDirective>("Alexa.Discovery", "Discover"),
+                    new DirectiveTypeConverter<TurnOnDirective>("Alexa.PowerController", "TurnOn") 
                 })
         {
         }

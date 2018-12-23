@@ -4,6 +4,9 @@ namespace RokuDotNet.Alexa.Lambda
 {
     public sealed class DirectiveHeader
     {
+        [JsonProperty("correlationToken")]
+        public string CorrelationToken { get; set; }
+        
         [JsonProperty("messageId")]
         public string MessageId { get; set; }
         
