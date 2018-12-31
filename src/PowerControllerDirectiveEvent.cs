@@ -2,9 +2,9 @@ using Newtonsoft.Json;
 
 namespace RokuDotNet.Alexa.Lambda
 {
-    public sealed class TurnOnDirectiveEvent : DirectiveEvent
+    public sealed class PowerControllerDirectiveEvent : DirectiveEvent
     {
-        public TurnOnDirectiveEvent(string messageId, string correlationToken)
+        public PowerControllerDirectiveEvent(string messageId, string correlationToken)
         {
             this.Header = new DirectiveHeader
             {

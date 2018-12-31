@@ -7,7 +7,8 @@ namespace RokuDotNet.Alexa.Lambda
                 new IDirectiveTypeConverter[]
                 { 
                     new DirectiveTypeConverter<DiscoveryDirective>("Alexa.Discovery", "Discover"),
-                    new DirectiveTypeConverter<TurnOnDirective>("Alexa.PowerController", "TurnOn") 
+                    new DirectiveTypeConverter<PowerControllerDirective>("Alexa.PowerController", "TurnOff"),
+                    new DirectiveTypeConverter<PowerControllerDirective>("Alexa.PowerController", "TurnOn") 
                 })
         {
         }

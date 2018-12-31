@@ -21,6 +21,7 @@ namespace RokuDotNet.Alexa.Lambda
             new Dictionary<Tuple<string, string>, AlexaRequest>
             {
                 { Tuple.Create("Alexa.Discovery", "Discover"), OnDiscoveryDirectiveAsync },
+                { Tuple.Create("Alexa.PowerController", "TurnOff"), OnTurnOffDirectiveAsync },
                 { Tuple.Create("Alexa.PowerController", "TurnOn"), OnTurnOnDirectiveAsync }
             };
 
@@ -83,14 +84,24 @@ namespace RokuDotNet.Alexa.Lambda
             });
         }
 
-        private static async Task<DirectiveResponse> OnTurnOnDirectiveAsync(DirectiveRequest request, ILambdaContext context)
+        private static Task<DirectiveResponse> OnTurnOnDirectiveAsync(DirectiveRequest request, ILambdaContext context)
+        {
+            return OnPowerControllerDirectiveAsync(request, context, turnOn: true);
+        }
+
+        private static Task<DirectiveResponse> OnTurnOffDirectiveAsync(DirectiveRequest request, ILambdaContext context)
+        {
+            return OnPowerControllerDirectiveAsync(request, context, turnOn: false);
+        }
+
+        private static async Task<DirectiveResponse> OnPowerControllerDirectiveAsync(DirectiveRequest request, ILambdaContext context, bool turnOn)
         {
             var baseUri = new Uri(Environment.GetEnvironmentVariable("ROKU_REST_SERVICE_URI"));
             string deviceKey = Environment.GetEnvironmentVariable("ROKU_REST_SERVICE_DEVICEKEY");
 
-            var turnOnDirective = (TurnOnDirective)request.Directive;
+            var powerControllerDirective = (PowerControllerDirective)request.Directive;
 
-            var deviceId = turnOnDirective?.Endpoint?.EndpointId;
+            var deviceId = powerControllerDirective?.Endpoint?.EndpointId;
 
             if (!String.IsNullOrEmpty(deviceId))
             {
@@ -99,7 +110,7 @@ namespace RokuDotNet.Alexa.Lambda
                 {
                     var device = new HttpRokuDevice(deviceId, new Uri(baseUri, deviceId + "/"), delegatingHandler);
 
-                    await device.Input.KeyPressAsync(SpecialKeys.PowerOn);
+                    await device.Input.KeyPressAsync(turnOn ? SpecialKeys.PowerOn : SpecialKeys.PowerOff);
 
                     return new DirectiveResponse
                     {
@@ -111,15 +122,15 @@ namespace RokuDotNet.Alexa.Lambda
                                 {
                                     Namespace = "Alexa.PowerController",
                                     Name = "powerState",
-                                    Value = "ON",
+                                    Value = turnOn ? "ON" : "OFF",
                                     TimeOfSample = DateTimeOffset.Now.ToString("o"),
                                     UncertaintyInMilliseconds = 500
                                 }
                             }
                         },
-                        Event = new TurnOnDirectiveEvent(request.Directive.Header.MessageId, request.Directive.Header.CorrelationToken)
+                        Event = new PowerControllerDirectiveEvent(request.Directive.Header.MessageId, request.Directive.Header.CorrelationToken)
                         {
-                            Endpoint = turnOnDirective.Endpoint
+                            Endpoint = powerControllerDirective.Endpoint
                         }
                     };
                 }
