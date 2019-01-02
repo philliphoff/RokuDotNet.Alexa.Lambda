@@ -23,7 +23,8 @@ namespace RokuDotNet.Alexa.Lambda
                 { Tuple.Create("Alexa.Discovery", "Discover"), OnDiscoveryDirectiveAsync },
                 { Tuple.Create("Alexa.PowerController", "TurnOff"), OnTurnOffDirectiveAsync },
                 { Tuple.Create("Alexa.PowerController", "TurnOn"), OnTurnOnDirectiveAsync },
-                { Tuple.Create("Alexa.StepSpeaker", "AdjustVolume"), OnAdjustVolumeDirectiveAsync }
+                { Tuple.Create("Alexa.StepSpeaker", "AdjustVolume"), OnAdjustVolumeDirectiveAsync },
+                { Tuple.Create("Alexa.StepSpeaker", "SetMute"), OnSetMuteDirectiveAsync }
             };
 
         public static Task<DirectiveResponse> TestRequestAsync(DirectiveRequest request, ILambdaContext context)
@@ -180,6 +181,53 @@ namespace RokuDotNet.Alexa.Lambda
                             Endpoint = adjustVolumeDirective.Endpoint
                         }
                     };
+                }
+            }
+
+            throw new InvalidOperationException("No endpoint ID was specified.");
+        }
+
+        private static async Task<DirectiveResponse> OnSetMuteDirectiveAsync(DirectiveRequest request, ILambdaContext context)
+        {
+            var baseUri = new Uri(Environment.GetEnvironmentVariable("ROKU_REST_SERVICE_URI"));
+            string deviceKey = Environment.GetEnvironmentVariable("ROKU_REST_SERVICE_DEVICEKEY");
+
+            var setMuteDirective = (SetMuteDirective)request.Directive;
+
+            var deviceId = setMuteDirective?.Endpoint?.EndpointId;
+
+            if (!String.IsNullOrEmpty(deviceId))
+            {
+                using (var clientHandler = new HttpClientHandler())
+                using (var delegatingHandler = new AuthorizationHandler(deviceKey, clientHandler))
+                {
+                    var device = new HttpRokuDevice(deviceId, new Uri(baseUri, deviceId + "/"), delegatingHandler);
+
+                    var mute = setMuteDirective?.Payload?.Mute;
+
+                    if (mute.HasValue)
+                    {
+                        // NOTE: Roku TVs can only toggle mute setting, not definitively set/unset mute.
+                        // CONSIDER: Using VolumeMute/VolumeDown combination for muting (which appears to persist mute setting)
+                        //           then using VolumeUp for unmute (which appears to cancel mute setting).
+                        await device.Input.KeyPressAsync(SpecialKeys.VolumeMute);
+
+                        return new DirectiveResponse
+                        {
+                            Context = new DirectiveContext
+                            {
+                                Properties = new DirectiveContextProperty[]
+                                {
+                                }
+                            },
+                            Event = new EndpointResponseEvent(request.Directive.Header.MessageId, request.Directive.Header.CorrelationToken)
+                            {
+                                Endpoint = setMuteDirective.Endpoint
+                            }
+                        };
+                    }
+
+                    throw new InvalidOperationException("No mute payload was specified.");
                 }
             }
 
